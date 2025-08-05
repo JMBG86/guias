@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Inserir Nova Guia{% endblock %}
+
+{% block content %}
+    <h1>Inserir Nova Guia</h1>
+
+    <div class="form-container">
+        <form method="post" action="{% url 'guia_create' %}">
+            {% csrf_token %}
+            {# Hidden field for editing existing guide #}
+            {% if form.instance.pk %}
+                <input type="hidden" name="guia_id" value="{{ form.instance.pk }}">
+            {% endif %}
+
+            {# Render specific fields for clinic, mes, ano first, with their initial values #}
+            <p>
+                <label for="id_clinica">Clínica:</label>
+                {{ form.clinica }}
+            </p>
+
+            <p>
+                <label for="id_mes">Mês:</label>
+                {{ form.mes }}
+            </p>
+
+            <p>
+                <label for="id_ano">Ano:</label>
+                {{ form.ano }}
+            </p>
+
+            {# Render remaining fields #}
+            <p>
+                <label for="id_numero_guia">Número ou data:</label>
+                {{ form.numero_guia }}
+            </p>
+
+            <p>
+                <label for="id_nome_paciente">Nome do Paciente:</label>
+                {{ form.nome_paciente }}
+            </p>
+
+            <p>
+                <label for="id_medico">Médico:</label>
+                {{ form.medico }}
+            </p>
+
+            <p>
+                <label for="id_trabalhos">Tipo(s) de Trabalho (1 por linha):</label>
+                {{ form.trabalhos }}
+            </p>
+
+            <p>
+                <label for="id_valor">Valor (€) (valor por linha):</label>
+                {{ form.valor }}
+            </p>
+
+            <button type="submit">Adicionar/Atualizar Registo</button>
+        </form>
+    </div>
+
+    {% if guias %}
+        {% if not is_closed_for_filters %}
+            <div class="form-container">
+                <h2>Encerrar Guia Mensal</h2>
+                <p>Ao encerrar a guia mensal para {{ clinica_nome }} - {{ mes_filter }}/{{ ano_filter }}, não será possível adicionar mais registos para este Mês, Ano e Clínica.</p>
+                <form method="post" action="{% url 'guia_close_monthly' %}" onsubmit="return confirm('Tem certeza que deseja encerrar esta guia mensal? Esta ação é irreversível para este Mês, Ano e Clínica.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="mes" value="{{ mes_filter }}">
+                    <input type="hidden" name="ano" value="{{ ano_filter }}">
+                    <input type="hidden" name="clinica" value="{{ clinica_filter_id }}">
+                    <input type="hidden" name="query_string" value="clinica={{ clinica_filter_id }}&mes={{ mes_filter }}&ano={{ ano_filter }}">
+                    <button type="submit" class="button warning">Encerrar Guia Mensal</button>
+                </form>
+            </div>
+        {% endif %}
+
+        <h2>Registos Inseridos para {{ clinica_nome }} - {{ mes_filter }}/{{ ano_filter }}</h2>
+        <div class="responsive-table-container">
+            {% for guia in guias %}
+                <div class="responsive-table-row">
+                    <div class="responsive-table-cell">
+                        <span class="cell-label">Número da Guia:</span> {{ guia.numero_guia }}
+                    </div>
+                    <div class="responsive-table-cell">
+                        <span class="cell-label">Nome do Paciente:</span> {{ guia.nome_paciente }}
+                    </div>
+                    <div class="responsive-table-cell">
+                        <span class="cell-label">Médico:</span> {{ guia.medico }}
+                    </div>
+                    <div class="responsive-table-cell">
+                        <span class="cell-label">Tipo de Trabalho:</span> {{ guia.trabalhos|linebreaksbr }}
+                    </div>
+                    <div class="responsive-table-cell">
+                        <span class="cell-label">Valor (€):</span> {{ guia.valor|floatformat:2 }} €
+                    </div>
+                    <div class="responsive-table-cell actions">
+                        {% if not is_closed_for_filters %} {# Only show delete if the monthly guide is not closed #}
+                            <a href="{% url 'guia_create' %}?edit_guia_id={{ guia.pk }}&clinica={{ clinica_filter_id }}&mes={{ mes_filter }}&ano={{ ano_filter }}" class="button" style="background-color: var(--info-color); color: white; padding: 0.5em 0.8em; text-decoration: none; border-radius: 4px; margin-right: 5px;">✏️</a>
+                            <form method="post" action="{% url 'guia_delete' guia.pk %}" onsubmit="return confirm('Tem certeza que deseja apagar este registo?');" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="query_string" value="clinica={{ clinica_filter_id }}&mes={{ mes_filter }}&ano={{ ano_filter }}">
+                                <button type="submit" class="delete-button">🗑️</button>
+                            </form>
+                        {% else %}
+                            <span style="color: var(--text-color);">Encerrado</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h3>Total: <strong>{{ total|floatformat:2 }} €</strong></h3>
+
+        {% if is_closed_for_filters %}
+            <p>
+                <a href="{% url 'guia_pdf' %}?clinica={{ clinica_filter_id }}&mes={{ mes_filter }}&ano={{ ano_filter }}" class="button">📄 Exportar PDF com Design</a>
+            </p>
+        {% endif %}
+    {% else %}
+        <p>Nenhum registo inserido para esta guia mensal ainda.</p>
+    {% endif %}
+
+    <p><a href="{% url 'overview_guides' %}" class="button" style="background-color: var(--info-color);">Ver Guias Encerradas</a></p>
+{% endblock %}

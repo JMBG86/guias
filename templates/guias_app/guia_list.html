@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Registo de Guias{% endblock %}
+
+{% block content %}
+    <h1>TRABALHOS REALIZADOS NO MÊS</h1>
+
+    <div class="form-container">
+        <h2>Filtrar Registos</h2>
+        <form method="get" action="{% url 'guia_list' %}" class="filter-form">
+            <div>
+                <label for="id_mes_filter">Mês:</label>
+                <input type="text" id="id_mes_filter" name="mes" value="{{ mes_filter }}" placeholder="Agosto">
+            </div>
+            <div>
+                <label for="id_ano_filter">Ano:</label>
+                <input type="text" id="id_ano_filter" name="ano" value="{{ ano_filter }}" placeholder="2025">
+            </div>
+            <div>
+                <label for="id_clinica_filter">Clínica:</label>
+                <select id="id_clinica_filter" name="clinica">
+                    <option value="">Todas</option>
+                    {% for clinica in clinicas %}
+                        <option value="{{ clinica.pk }}" {% if clinica.pk|stringformat:"s" == clinica_filter_id %}selected{% endif %}>{{ clinica.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Filtrar</button>
+        </form>
+    </div>
+
+    <p><a href="{% url 'guia_create' %}">Adicionar Novo Registo</a></p>
+
+    {% if guias and not is_closed_for_filters %}
+        <div class="form-container" style="background-color: #fff3cd; border-color: #ffeeba;">
+            <h2>Encerrar Guia Mensal</h2>
+            <p>Ao encerrar a guia mensal para os filtros atuais, não será possível adicionar mais registos para este Mês, Ano e Clínica.</p>
+            <form method="post" action="{% url 'guia_close_monthly' %}" onsubmit="return confirm('Tem certeza que deseja encerrar esta guia mensal? Esta ação é irreversível para este Mês, Ano e Clínica.');">
+                {% csrf_token %}
+                <input type="hidden" name="mes" value="{{ mes_filter }}">
+                <input type="hidden" name="ano" value="{{ ano_filter }}">
+                <input type="hidden" name="clinica" value="{{ clinica_filter_id }}">
+                <input type="hidden" name="query_string" value="{{ request.GET.urlencode }}">
+                <button type="submit" class="button" style="background-color: #ffc107; color: black;">Encerrar Guia Mensal</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <h2>Registos Inseridos</h2>
+    {% if guias %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Número da Guia</th>
+                    <th>Nome do Paciente</th>
+                    <th>Médico</th>
+                    <th>Tipo de Trabalho</th>
+                    <th>Valor (€)</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for guia in guias %}
+                    <tr>
+                        <td>{{ guia.numero_guia }}</td>
+                        <td>{{ guia.nome_paciente }}</td>
+                        <td>{{ guia.medico }}</td>
+                        <td>{{ guia.trabalhos|linebreaksbr }}</td>
+                        <td>{{ guia.valor|linebreaksbr }}</td>
+                        <td>
+                            {% if not is_closed_for_filters %} {# Only show delete if the monthly guide is not closed #}
+                                <form method="post" action="{% url 'guia_delete' guia.pk %}" onsubmit="return confirm('Tem certeza que deseja apagar este registo?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="query_string" value="{{ request.GET.urlencode }}">
+                                    <button type="submit" class="delete-button">🗑️</button>
+                                </form>
+                            {% else %}
+                                <span style="color: #6c757d;">Encerrado</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Sem registos para este mês/ano/clínica.</p>
+    {% endif %}
+
+    <h3>Total estimado: <strong>{{ total|floatformat:2 }} €</strong></h3>
+
+    {% if guias and is_closed_for_filters %}
+        <p>
+            <a href="{% url 'guia_pdf' %}?{{ request.GET.urlencode }}" class="button" style="background-color: #007bff; color: white; padding: 0.8em 1.2em; text-decoration: none; border-radius: 4px;">📄 Exportar PDF com Design</a>
+        </p>
+    {% endif %}
+{% endblock %}

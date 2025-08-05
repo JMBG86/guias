@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão de Clínicas{% endblock %}
+
+{% block content %}
+    <h1>Gestão de Clínicas</h1>
+
+    <h2>Adicionar Nova Clínica</h2>
+    <div class="form-container">
+        <form method="post" action="{% url 'clinica_add' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Adicionar Clínica</button>
+        </form>
+    </div>
+
+    <h2>Clínicas Existentes</h2>
+    {% if clinicas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome da Clínica</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clinica in clinicas %}
+                    <tr>
+                        <td>{{ clinica.nome }}</td>
+                        <td>
+                            <form method="post" action="{% url 'clinica_delete' clinica.pk %}" onsubmit="return confirm('Tem certeza que deseja apagar esta clínica?');">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-button">Apagar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhuma clínica registada.</p>
+    {% endif %}
+{% endblock %}

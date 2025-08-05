@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Vista Geral de Guias Encerradas{% endblock %}
+
+{% block content %}
+    <h1>Vista Geral de Guias Encerradas</h1>
+
+    {% if grouped_data %}
+        {% for clinica_name, clinica_data in grouped_data.items %}
+            <div class="form-container">
+                <h2>{{ clinica_name }}</h2>
+                <p>Número de guias mensais encerradas: <strong>{{ clinica_data.monthly_guides|length }}</strong></p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mês/Ano</th>
+                            <th>Valor Total (€)</th>
+                            <th>PDF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month_year, guide_data in clinica_data.monthly_guides.items %}
+                            <tr>
+                                <td>{{ month_year }}</td>
+                                <td>{{ guide_data.total_value|floatformat:2 }} €</td>
+                                <td>
+                                    <a href="{{ guide_data.guia_pdf_url }}" class="button" style="background-color: var(--secondary-color); color: white; padding: 0.5em 0.8em; text-decoration: none; border-radius: 4px;">📄 PDF</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <h3>Total da Clínica {{ clinica_name }}: <strong>{{ clinica_data.clinic_total|floatformat:2 }} €</strong></h3>
+            </div>
+        {% endfor %}
+
+        <div class="form-container" style="background-color: var(--dark-bg); color: var(--light-text); text-align: center;">
+            <h2>Total Global de Todas as Clínicas: <strong>{{ global_total|floatformat:2 }} €</strong></h2>
+        </div>
+
+    {% else %}
+        <p>Nenhuma guia encerrada encontrada.</p>
+    {% endif %}
+{% endblock %}

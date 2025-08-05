@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+    <style>
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .home-button {
+            display: block;
+            width: 300px; /* Fixed width for buttons */
+            padding: 15px 20px;
+            font-size: 1.2em;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .home-button:hover {
+            background-color: #0056b3;
+        }
+        .home-button.admin {
+            background-color: #6c757d; /* Grey for admin */
+        }
+        .home-button.admin:hover {
+            background-color: #5a6268;
+        }
+        .home-button.clinic {
+            background-color: #28a745; /* Green for clinics */
+        }
+        .home-button.clinic:hover {
+            background-color: #218838;
+        }
+        .home-button.overview {
+            background-color: #17a2b8; /* Info blue for overview */
+        }
+        .home-button.overview:hover {
+            background-color: #138496;
+        }
+    </style>
+
+    <h1>Bem-vindo à Gestão de Guias</h1>
+
+    <div class="home-buttons">
+        <a href="{% url 'admin:index' %}" class="home-button admin">Administração</a>
+        
+        {% for clinica in clinicas %}
+            <a href="{% url 'guia_create' %}?clinica={{ clinica.pk }}" class="home-button clinic">{{ clinica.nome }}</a>
+        {% endfor %}
+
+        <a href="{% url 'overview_guides' %}" class="home-button overview">Vista Geral (Guias Encerradas)</a>
+    </div>
+{% endblock %}

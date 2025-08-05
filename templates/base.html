@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestão de Guias{% endblock %}</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --primary-dark: #45a049;
+            --secondary-color: #007bff; /* Blue */
+            --secondary-dark: #0056b3;
+            --accent-color: #ffc107; /* Yellow */
+            --accent-dark: #e0a800;
+            --danger-color: #dc3545; /* Red */
+            --danger-dark: #c82333;
+            --info-color: #17a2b8; /* Cyan */
+            --info-dark: #138496;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+            --text-color: #333;
+            --light-text: #fff;
+            --border-color: #dee2e6;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        h1, h2, h3 {
+            color: var(--dark-bg);
+            margin-bottom: 0.8em;
+        }
+
+        .navbar {
+            background-color: var(--dark-bg);
+            padding: 1em 0;
+            box-shadow: 0 2px 5px var(--shadow-light);
+        }
+
+        .navbar-content {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center items horizontally */
+            gap: 10px; /* Space between navigation items */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navbar a {
+            color: var(--light-text);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+            font-weight: bold;
+            font-size: 0.95em;
+            width: 100%; /* Make links take full width */
+            justify-content: center; /* Center text and icon */
+        }
+
+        .navbar a:hover {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+        }
+
+        .navbar a.admin-link:hover {
+            background-color: var(--info-dark);
+        }
+
+        /* Dropdown specific styles */
+        .dropdown-menu-content {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            width: 100%;
+            gap: 10px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out; /* Smooth transition for height */
+            max-height: 0; /* Initial state for transition */
+        }
+
+        .dropdown-menu-content.show {
+            display: flex; /* Show when active */
+            max-height: 500px; /* A value larger than the max possible height */
+        }
+
+        .container {
+            padding: 2em;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: var(--light-text);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            overflow-x: hidden; /* Prevent horizontal scrolling within the container */
+        }
+
+        .form-container {
+            background-color: var(--light-bg);
+            padding: 1.5em;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px var(--shadow-light);
+            margin-bottom: 2em;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .form-container input[type="text"],
+        .form-container textarea,
+        .form-container select {
+            width: calc(100% - 20px); /* Adjust for padding */
+            padding: 10px;
+            margin-bottom: 1em;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        .form-container button {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-container button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .message {
+            padding: 1em;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5em;
+            background-color: var(--light-text);
+            box-shadow: 0 1px 4px var(--shadow-light);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+            table-layout: fixed; /* Added for fixed table layout */
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            word-wrap: break-word; /* Added for word wrapping */
+        }
+
+        th {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .delete-button {
+            background-color: var(--danger-color);
+            color: var(--light-text);
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-button:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .button {
+            background-color: var(--secondary-color);
+            color: var(--light-text);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .button.warning {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+        }
+
+        .button.warning:hover {
+            background-color: var(--accent-dark);
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+            margin-bottom: 1.5em;
+            align-items: flex-end;
+            background-color: var(--light-bg);
+            padding: 1.5em;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-form div {
+            flex: 1;
+            min-width: 150px; /* Ensure fields don't get too small */
+        }
+
+        .filter-form button {
+            background-color: var(--info-color);
+            color: var(--light-text);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-form button:hover {
+            background-color: var(--info-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .navbar a {
+                justify-content: center;
+            }
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-form div {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+
+        /* Responsive table for guia_create */
+        .responsive-table-container {
+            margin-top: 1.5em;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .responsive-table-row {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+        }
+
+        .responsive-table-row:last-child {
+            border-bottom: none;
+        }
+
+        .responsive-table-cell {
+            flex: 1 1 100%; /* Each cell takes full width on small screens */
+            padding: 5px 15px;
+            box-sizing: border-box;
+        }
+
+        .responsive-table-cell .cell-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 120px; /* Label width */
+            margin-right: 10px;
+        }
+
+        .responsive-table-cell.actions {
+            text-align: right;
+        }
+
+        @media (min-width: 768px) {
+            .responsive-table-cell {
+                flex: 1; /* Distribute space more evenly on larger screens */
+            }
+            .responsive-table-cell.actions {
+                flex: 0 0 100px; /* Fixed width for actions column */
+            }
+        }
+
+        /* Action buttons for edit/delete */
+        .action-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background-color 0.3s ease;
+            display: inline-flex; /* Use flex to center content */
+            align-items: center;
+            justify-content: center;
+            width: 30px; /* Fixed width for consistency */
+            height: 30px; /* Fixed height for consistency */
+            box-sizing: border-box;
+        }
+
+        .action-button.edit {
+            background-color: var(--info-color);
+            color: var(--light-text);
+        }
+
+        .action-button.edit:hover {
+            background-color: var(--info-dark);
+        }
+
+        .action-button.delete {
+            background-color: var(--danger-color);
+            color: var(--light-text);
+        }
+
+        .action-button.delete:hover {
+            background-color: var(--danger-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <a href="#" id="menu-toggle">🏠 Página Inicial</a>
+            <div id="dropdown-menu-content" class="dropdown-menu-content">
+                {% for clinica in clinicas_nav %}
+                    <a href="{% url 'guia_create' %}?clinica={{ clinica.pk }}">🏥 {{ clinica.nome }}</a>
+                {% endfor %}
+                <a href="{% url 'clinica_list' %}">⚙️ Gestão de Clínicas</a>
+                <a href="{% url 'overview_guides' %}">📊 Vista Geral de Guias</a>
+                <a href="{% url 'admin:index' %}" class="admin-link">🔒 Administração</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+        document.getElementById('menu-toggle').addEventListener('click', function(e) {
+            var dropdownContent = document.getElementById('dropdown-menu-content');
+            if (dropdownContent.classList.contains('show')) {
+                // If dropdown is already open, navigate to home page
+                window.location.href = '{% url 'home' %}';
+            } else {
+                // If dropdown is closed, prevent default and open it
+                e.preventDefault();
+                dropdownContent.classList.add('show');
+            }
+        });
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('#menu-toggle')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

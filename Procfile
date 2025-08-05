@@ -1,0 +1,1 @@
+web: gunicorn guias_project.wsgi
