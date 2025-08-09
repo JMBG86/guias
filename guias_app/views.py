@@ -305,6 +305,7 @@ def guia_create(request):
 def guia_delete(request, pk):
     guia = get_object_or_404(Guia, pk=pk)
     guia.delete()
+    messages.success(request, "Registo apagado com sucesso!")
     query_string = request.POST.get('query_string', '')
     return redirect(f'{reverse('guia_create')}?{query_string}')
 
